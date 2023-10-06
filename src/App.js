@@ -12,8 +12,8 @@ function App() {
         <Routes>
           <Route path='/' element={<Login />} />
           <Route path='/register' element={<Register />} />
-          <Route path="/home/:userId" element={<Home />} />
-          <Route path='*' element={<Notfound />}/>
+          <Route path="/login/:userId" element={<Home />} />
+          <Route path='*' element={<Notfound />} />
         </Routes>
       </BrowserRouter>
     </div>

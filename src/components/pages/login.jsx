@@ -25,7 +25,7 @@ const Login = () => {
 
             const userId = userCredential.user.uid;
 
-            navigate(`/home/${userId}`);
+            navigate(`/login/${userId}`);
         } catch (error) {
             console.error(error);
             setErrorMessage("There was an error logging in. Please check your information and try again.");
