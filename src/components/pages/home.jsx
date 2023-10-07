@@ -7,8 +7,10 @@ import {
     UploadOutlined,
     UserOutlined,
     FileOutlined,
+    LogoutOutlined, // Import LogoutOutlined
 } from '@ant-design/icons';
 import { Layout, Menu, Button, theme } from 'antd';
+import '../styles/home.css';
 
 const { Header, Sider, Content } = Layout;
 
@@ -27,8 +29,12 @@ const Home = () => {
         }
     }, [user]);
 
+    const handleLogout = () => {
+        auth.signOut(); // Foydalanuvchini tizimdan chiqish
+    };
+
     if (loading) {
-        return <h2>Loading...</h2>;
+        return <center><h2>Loading...</h2></center>;
     }
 
     if (error) {
@@ -37,31 +43,28 @@ const Home = () => {
 
     return (
         <div>
-            <Layout>
+            <Layout className='home'>
                 <Sider trigger={null} collapsible collapsed={collapsed}>
                     <div className='demo-logo-vertical' />
                     <Menu
+                        className='home-menu'
                         theme='dark'
                         mode='inline'
                         defaultSelectedKeys={['1']}
-                        items={[
-                            {
-                                key: '1',
-                                icon: <UserOutlined />,
-                                label: 'Home',
-                            },
-                            {
-                                key: '2',
-                                icon: <FileOutlined />,
-                                label: 'Files',
-                            },
-                            {
-                                key: '3',
-                                icon: <UploadOutlined />,
-                                label: 'Upload',
-                            },
-                        ]}
-                    />
+                    >
+                        <Menu.Item key='1' icon={<UserOutlined />}>
+                            Home
+                        </Menu.Item>
+                        <Menu.Item key='2' icon={<FileOutlined />}>
+                            Files
+                        </Menu.Item>
+                        <Menu.Item key='3' icon={<UploadOutlined />}>
+                            Upload
+                        </Menu.Item>
+                        <Menu.Item key='4' icon={<LogoutOutlined />} onClick={handleLogout}>
+                            Logout
+                        </Menu.Item>
+                    </Menu>
                 </Sider>
                 <Layout>
                     <Header
@@ -94,7 +97,6 @@ const Home = () => {
                 </Layout>
             </Layout>
         </div>
-
     );
 };
 
