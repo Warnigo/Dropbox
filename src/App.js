@@ -1,5 +1,7 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
+
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
 import Login from './components/pages/login';
 import Notfound from './components/pages/notFound';
 import Register from './components/pages/register';

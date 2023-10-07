@@ -7,9 +7,10 @@ import {
     UploadOutlined,
     UserOutlined,
     FileOutlined,
-    LogoutOutlined, // Import LogoutOutlined
+    LogoutOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Button, theme } from 'antd';
+import { Layout, Menu, Button, theme, Upload, message, List } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import '../styles/home.css';
 
 const { Header, Sider, Content } = Layout;
@@ -20,7 +21,7 @@ const Home = () => {
         token: { colorBgContainer },
     } = theme.useToken();
 
-    const [user, loading, error] = useAuthState(auth);
+    const [user] = useAuthState(auth);
     const [email, setEmail] = useState('');
 
     useEffect(() => {
@@ -29,17 +30,28 @@ const Home = () => {
         }
     }, [user]);
 
+    const navigate = useNavigate();
+
     const handleLogout = () => {
-        auth.signOut(); // Foydalanuvchini tizimdan chiqish
+        console.log('Logging out...');
+        auth.signOut();
+        navigate('/');
     };
 
-    if (loading) {
-        return <center><h2>Loading...</h2></center>;
-    }
+    const handleFileUpload = (file) => {
+        if (file.name) {
+            message.success(`${file.name} has been uploaded`);
+        } else {
+            message.success('File has been uploaded');
+        }
+    };
 
-    if (error) {
-        return <h2>Error: {error.message}</h2>;
-    }
+
+    const [uploadedFiles] = useState([]);
+
+    const handleFileView = (file) => {
+        message.info(`${file.name} view file`);
+    };
 
     return (
         <div>
@@ -59,9 +71,18 @@ const Home = () => {
                             Files
                         </Menu.Item>
                         <Menu.Item key='3' icon={<UploadOutlined />}>
-                            Upload
+                            <Upload
+                                showUploadList={false}
+                                customRequest={handleFileUpload}
+                            >
+                                <Button>Upload</Button>
+                            </Upload>
                         </Menu.Item>
-                        <Menu.Item key='4' icon={<LogoutOutlined />} onClick={handleLogout}>
+                        <Menu.Item
+                            key='4'
+                            icon={<LogoutOutlined />}
+                            onClick={handleLogout}
+                        >
                             Logout
                         </Menu.Item>
                     </Menu>
@@ -92,7 +113,23 @@ const Home = () => {
                             background: colorBgContainer,
                         }}
                     >
-                        <h1 className='home-title'>Hello {email ? email : 'none'}</h1>
+                        {user ? (
+                            <h1 className='home-title'>Hello {email ? email : 'none'}</h1>
+                        ) : null}
+                        <List
+                            header={<div>Uploaded Files</div>}
+                            bordered
+                            dataSource={uploadedFiles}
+                            renderItem={(file) => (
+                                <List.Item
+                                    key={file.name}
+                                    onClick={() => handleFileView(file)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {file.name}
+                                </List.Item>
+                            )}
+                        />
                     </Content>
                 </Layout>
             </Layout>
