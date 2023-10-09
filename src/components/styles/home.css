@@ -6,3 +6,14 @@
     padding-top: 220px;
     font-size: 20px;
 }
+
+.box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.uploading-file-box button {
+    background-color: #1677ff;
+    color: white;
+}
