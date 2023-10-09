@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase/firebase"; // Import Firebase Authentication
+import { auth } from "../firebase/firebase";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UploadOutlined,
   UserOutlined,
   LogoutOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Button, theme, Upload, message, List } from "antd";
+import { Layout, Menu, Button, theme, message, List } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL, // Import Firebase Storage methods
+  getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
 import "../styles/home.css";
 
@@ -56,16 +58,13 @@ const Home = () => {
         throw new Error("Invalid file or file name is missing.");
       }
 
-      const storage = getStorage(); // Initialize Firebase Storage
-      const storageRef = ref(storage, `uploads/${selectedFile.name}`); // Reference to the storage location
+      const storage = getStorage();
+      const storageRef = ref(storage, `uploads/${selectedFile.name}`);
 
-      // Upload the file to Firebase Storage
       await uploadBytes(storageRef, selectedFile);
 
-      // Get the download URL of the uploaded file
       const downloadURL = await getDownloadURL(storageRef);
 
-      // Store the download URL and file name
       setUploadedFiles((prevUploadedFiles) => [
         ...prevUploadedFiles,
         { name: selectedFile.name, downloadURL },
@@ -81,6 +80,31 @@ const Home = () => {
   const handleFileView = (file) => {
     window.open(file.downloadURL, "_blank");
   };
+
+  const handleFileDelete = async (file) => {
+    try {
+      const storage = getStorage();
+      const storageRef = ref(storage, `uploads/${file.name}`);
+
+      try {
+        await getDownloadURL(storageRef);
+      } catch (error) {
+        throw new Error("File not found in Firebase Storage.");
+      }
+
+      await deleteObject(storageRef);
+
+      setUploadedFiles((prevUploadedFiles) =>
+        prevUploadedFiles.filter((uploadedFile) => uploadedFile.name !== file.name)
+      );
+
+      message.success(`${file.name} has been deleted`);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      message.error(`File deletion failed: ${error.message}`);
+    }
+  };
+
 
   return (
     <div>
@@ -129,14 +153,17 @@ const Home = () => {
             }}
           >
             {user ? (
-              <div className="box">
-                <h1 className="home-title">Hello {email ? email : "none"}</h1>
-                <div>
-                  <input type="file" onChange={handleFileChange} />
-                  <Button icon={<UploadOutlined />} onClick={handleFileUpload}>
-                    Upload File
-                  </Button>
+              <div>
+                <div className="box">
+                  <h1 className="home-title">Hello {email ? email : "none"}</h1>
+                  <div>
+                    <input type="file" onChange={handleFileChange} className="home-file-upload-input" />
+                    <Button icon={<UploadOutlined />} className="home-upload-button" onClick={handleFileUpload}>
+                      Upload File
+                    </Button>
+                  </div>
                 </div>
+
                 <List
                   header={<div>Uploaded Files</div>}
                   bordered
@@ -154,6 +181,12 @@ const Home = () => {
                       >
                         {file.name}
                       </a>
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleFileDelete(file)}
+                        style={{ color: "red" }}
+                      />
                     </List.Item>
                   )}
                 />
@@ -167,5 +200,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
