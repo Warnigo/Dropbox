@@ -2,15 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/firebase";
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   UploadOutlined,
-  UserOutlined,
-  LogoutOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Button, theme, message, List } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Layout, Button, theme, message, List } from "antd";
+import { Link } from "react-router-dom";
 import {
   getStorage,
   ref,
@@ -20,10 +16,9 @@ import {
 } from "firebase/storage";
 import "../styles/home.css";
 
-const { Header, Sider, Content } = Layout;
+const { Content } = Layout;
 
 const Home = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -33,19 +28,11 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email);
-    }
-  }, [user]);
-
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    console.log("Logging out...");
-    auth.signOut();
-    navigate("/");
-  };
+  // useEffect(() => {
+  //   if (user) {
+  //     setEmail(user.email);
+  //   }
+  // }, [user]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -109,41 +96,7 @@ const Home = () => {
   return (
     <div>
       <Layout className="home">
-        <Sider trigger={null} collapsible collapsed={collapsed}>
-          <div className="demo-logo-vertical" />
-          <Menu
-            className="home-menu"
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={["1"]}
-          >
-            <Menu.Item key="1" icon={<UserOutlined />}>
-              Home
-            </Menu.Item>
-
-            <Menu.Item key="4" icon={<LogoutOutlined />} onClick={handleLogout}>
-              Logout
-            </Menu.Item>
-          </Menu>
-        </Sider>
         <Layout>
-          <Header
-            style={{
-              padding: 0,
-              background: colorBgContainer,
-            }}
-          >
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                fontSize: "16px",
-                width: 64,
-                height: 64,
-              }}
-            />
-          </Header>
           <Content
             style={{
               margin: "24px 16px",
@@ -174,13 +127,13 @@ const Home = () => {
                       onClick={() => handleFileView(file)}
                       style={{ cursor: "pointer" }}
                     >
-                      <a
-                        href={file.downloadURL}
+                      <Link
+                        to={file.downloadURL}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         {file.name}
-                      </a>
+                      </Link>
                       <Button
                         type="text"
                         icon={<DeleteOutlined />}
