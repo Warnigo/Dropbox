@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/firebase";
 import {
   UploadOutlined,
-  DeleteOutlined,
 } from "@ant-design/icons";
 import { Layout, Button, theme, message, List } from "antd";
 import { Link } from "react-router-dom";
@@ -12,7 +11,6 @@ import {
   ref,
   uploadBytes,
   getDownloadURL,
-  deleteObject,
 } from "firebase/storage";
 import "../styles/home.css";
 
@@ -24,15 +22,8 @@ const Home = () => {
   } = theme.useToken();
 
   const [user] = useAuthState(auth);
-  const [email, setEmail] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-
-  // useEffect(() => {
-  //   if (user) {
-  //     setEmail(user.email);
-  //   }
-  // }, [user]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -68,31 +59,6 @@ const Home = () => {
     window.open(file.downloadURL, "_blank");
   };
 
-  const handleFileDelete = async (file) => {
-    try {
-      const storage = getStorage();
-      const storageRef = ref(storage, `uploads/${file.name}`);
-
-      try {
-        await getDownloadURL(storageRef);
-      } catch (error) {
-        throw new Error("File not found in Firebase Storage.");
-      }
-
-      await deleteObject(storageRef);
-
-      setUploadedFiles((prevUploadedFiles) =>
-        prevUploadedFiles.filter((uploadedFile) => uploadedFile.name !== file.name)
-      );
-
-      message.success(`${file.name} has been deleted`);
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      message.error(`File deletion failed: ${error.message}`);
-    }
-  };
-
-
   return (
     <div>
       <Layout className="home">
@@ -108,7 +74,6 @@ const Home = () => {
             {user ? (
               <div>
                 <div className="box">
-                  <h1 className="home-title">Hello {email ? email : "none"}</h1>
                   <div>
                     <input type="file" onChange={handleFileChange} className="home-file-upload-input" />
                     <Button icon={<UploadOutlined />} className="home-upload-button" onClick={handleFileUpload}>
@@ -134,12 +99,6 @@ const Home = () => {
                       >
                         {file.name}
                       </Link>
-                      <Button
-                        type="text"
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleFileDelete(file)}
-                        style={{ color: "red" }}
-                      />
                     </List.Item>
                   )}
                 />

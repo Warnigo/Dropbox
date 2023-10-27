@@ -2,11 +2,12 @@ import './App.css';
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import Login from './components/pages/login';
-import Notfound from './components/pages/notFound';
-import Register from './components/pages/register';
-import Home from './components/pages/home';
+import Login from './components/authentication/login';
+import Notfound from './notFound';
+import Register from './components/authentication/register';
+import Home from './components/context/home';
 import FrontLayout from './components/layout/frontLayot';
+import DeleteFile from './components/context/deleteFile';
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
           <Route path='/register' element={<Register />} />
 
           <Route path='/login/:userId' element={<FrontLayout />}>
-            <Route index element={<Home />} />
+            <Route path='/login/:userId' element={<Home />} />
+            <Route path='/login/:userId/delete_file' element={<DeleteFile />} />
           </Route>
 
           <Route path='*' element={<Notfound />} />
