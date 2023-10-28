@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/firebase";
-import {
-  UploadOutlined,
-} from "@ant-design/icons";
+import { UploadOutlined, FolderAddOutlined } from "@ant-design/icons";
 import { Layout, Button, theme, message, List } from "antd";
 import { Link } from "react-router-dom";
 import {
@@ -11,6 +9,8 @@ import {
   ref,
   uploadBytes,
   getDownloadURL,
+  listAll, // Firebase Storage'dan fayllarni ro'yxatini olish uchun
+  deleteObject, // Firebase Storage'dan obyektlarni o'chirish uchun
 } from "firebase/storage";
 import "../styles/home.css";
 
@@ -24,6 +24,8 @@ const Home = () => {
   const [user] = useAuthState(auth);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [createdFileName, setCreatedFileName] = useState("");
+  const [selectedFolder, setSelectedFolder] = useState("AllFile"); // Boshlang'ich papka nomi
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -37,7 +39,7 @@ const Home = () => {
       }
 
       const storage = getStorage();
-      const storageRef = ref(storage, `uploads/${selectedFile.name}`);
+      const storageRef = ref(storage, `${selectedFolder}/${selectedFile.name}`);
 
       await uploadBytes(storageRef, selectedFile);
 
@@ -57,6 +59,55 @@ const Home = () => {
 
   const handleFileView = (file) => {
     window.open(file.downloadURL, "_blank");
+  };
+
+  const handleCreateFile = async () => {
+    if (!createdFileName) {
+      message.error("Enter a file name!");
+      return;
+    }
+
+    const fileContent = "This is the text of the file";
+    const blob = new Blob([fileContent], { type: "text/plain" });
+    const file = new File([blob], createdFileName);
+
+    const storage = getStorage();
+    const storageRef = ref(storage, `${selectedFolder}/${file.name}`);
+
+    try {
+      await uploadBytes(storageRef, file);
+      message.success(`${file.name} created successfully`);
+
+      setUploadedFiles((prevUploadedFiles) => [
+        ...prevUploadedFiles,
+        { name: file.name, downloadURL: URL.createObjectURL(file) },
+      ]);
+    } catch (error) {
+      console.error("An error occurred while creating the file:", error);
+      message.error(`An error occurred while creating the file: ${error.message}`);
+    }
+  };
+
+  const handleFileNameChange = (e) => {
+    setCreatedFileName(e.target.value);
+  };
+
+  const handleFolderChange = (folderName) => {
+    setSelectedFolder(folderName);
+    refreshFilesList(folderName);
+  };
+
+  const refreshFilesList = async (folderName) => {
+    const storage = getStorage();
+    const folderRef = ref(storage, folderName);
+    const filesList = await listAll(folderRef);
+    const files = filesList.items;
+
+    const newUploadedFiles = files.map((file) => {
+      return { name: file.name, downloadURL: file.fullPath };
+    });
+
+    setUploadedFiles(newUploadedFiles);
   };
 
   return (
@@ -80,10 +131,31 @@ const Home = () => {
                       Upload File
                     </Button>
                   </div>
+                  <div className="addFile">
+                    <input
+                      type="text"
+                      placeholder="Fayl nomini kiriting"
+                      value={createdFileName}
+                      onChange={handleFileNameChange}
+                      className="home-file-name-input"
+                    />
+                    <Button className="home-create-button" icon={<FolderAddOutlined />} onClick={handleCreateFile}>
+                      Add Folder
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="folderButtons">
+                  <Button className={`folderButton ${selectedFolder === "AllFile" ? "active" : ""}`} onClick={() => handleFolderChange("AllFile")}>
+                    Files
+                  </Button>
+                  <Button className={`folderButton ${selectedFolder === "Folder1" ? "active" : ""}`} onClick={() => handleFolderChange("Folder1")}>
+                    Folders
+                  </Button>
                 </div>
 
                 <List
-                  header={<div>Uploaded Files</div>}
+                  header={<div>Uploaded</div>}
                   bordered
                   dataSource={uploadedFiles}
                   renderItem={(file) => (
@@ -92,13 +164,13 @@ const Home = () => {
                       onClick={() => handleFileView(file)}
                       style={{ cursor: "pointer" }}
                     >
-                      <Link
-                        to={file.downloadURL}
+                      <a
+                        href={file.downloadURL}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         {file.name}
-                      </Link>
+                      </a>
                     </List.Item>
                   )}
                 />
@@ -112,6 +184,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
-
