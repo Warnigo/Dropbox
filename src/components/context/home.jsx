@@ -9,8 +9,7 @@ import {
   ref,
   uploadBytes,
   getDownloadURL,
-  listAll, // Firebase Storage'dan fayllarni ro'yxatini olish uchun
-  deleteObject, // Firebase Storage'dan obyektlarni o'chirish uchun
+  listAll,
 } from "firebase/storage";
 import "../styles/home.css";
 
@@ -25,7 +24,7 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [createdFileName, setCreatedFileName] = useState("");
-  const [selectedFolder, setSelectedFolder] = useState("AllFile"); // Boshlang'ich papka nomi
+  const [selectedFolder, setSelectedFolder] = useState("AllFile");
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -164,13 +163,13 @@ const Home = () => {
                       onClick={() => handleFileView(file)}
                       style={{ cursor: "pointer" }}
                     >
-                      <a
-                        href={file.downloadURL}
+                      <Link
+                        to={file.downloadURL}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         {file.name}
-                      </a>
+                      </Link>
                     </List.Item>
                   )}
                 />
